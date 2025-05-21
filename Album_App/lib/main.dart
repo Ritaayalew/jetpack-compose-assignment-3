@@ -9,6 +9,7 @@ import 'package:album_app/presentation/screens/album_list_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:go_router/go_router.dart';
+import 'package:provider/provider.dart';
 
 void main() {
   runApp(MyApp());
@@ -35,26 +36,55 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider(
-      create: (context) => AlbumRepositoryImplementation(),
-      child: MultiBlocProvider(
-        providers: [
-          BlocProvider(
-            create: (context) => AlbumBloc(
-              fetchAlbumsUseCase: AlbumsUseCase(
-                RepositoryProvider.of<AlbumRepository>(context),
-              ),
-              fetchPhotosUseCase: PhotosUseCase(
-                RepositoryProvider.of<AlbumRepository>(context),
-              ),
-            )..add(FetchAlbums()),
-          ),
-        ],
-        child: MaterialApp.router(
-          title: 'Album App',
-          theme: ThemeData(primarySwatch: Colors.blue),
-          routerConfig: _router,
-        ),
+    print('Building MyApp at ${DateTime.now()} EAT');
+    return Provider<AlbumRepository>(
+      create: (_) {
+        print('Creating AlbumRepositoryImplementation at ${DateTime.now()} EAT');
+        try {
+          return AlbumRepositoryImplementation();
+        } catch (e) {
+          print('Error creating AlbumRepositoryImplementation: $e');
+          rethrow;
+        }
+      },
+      dispose: (_, repo) {
+        if (repo is AlbumRepositoryImplementation) {
+          repo.dispose();
+          print('Disposed AlbumRepositoryImplementation at ${DateTime.now()} EAT');
+        }
+      },
+      child: Builder(
+        builder: (providerContext) {
+          print('Inside Builder with providerContext at ${DateTime.now()} EAT');
+          return BlocProvider(
+            create: (blocContext) {
+              print('Creating AlbumBloc with blocContext at ${DateTime.now()} EAT');
+              final repository = Provider.of<AlbumRepository>(providerContext, listen: false);
+              if (repository == null) {
+                print('Provider.of<AlbumRepository> returned null in blocContext');
+                throw Exception('Provider returned null for AlbumRepository in blocContext');
+              }
+              print('Repository fetched successfully: $repository');
+              try {
+                final albumBloc = AlbumBloc(
+                  fetchAlbumsUseCase: AlbumsUseCase(repository),
+                  fetchPhotosUseCase: PhotosUseCase(repository),
+                );
+                print('AlbumBloc created successfully: $albumBloc');
+                albumBloc.add(FetchAlbums());
+                return albumBloc;
+              } catch (e) {
+                print('Error creating AlbumBloc: $e');
+                rethrow;
+              }
+            },
+            child: MaterialApp.router(
+              title: 'Album App',
+              theme: ThemeData(primarySwatch: Colors.blue),
+              routerConfig: _router,
+            ),
+          );
+        },
       ),
     );
   }
