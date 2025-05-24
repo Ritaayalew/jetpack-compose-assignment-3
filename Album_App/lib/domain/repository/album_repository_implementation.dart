@@ -1,7 +1,7 @@
 import 'dart:convert';
-import 'package:album_app/data/models/album.dart';
-import 'package:album_app/data/models/photo.dart';
-import 'package:album_app/data/repository/album_repository.dart';
+import '../../data/models/album.dart';
+import '../../data/models/photo.dart';
+import '../../data/repository/album_repository.dart';
 import 'package:http/http.dart' as http;
 
 class AlbumRepositoryImplementation implements AlbumRepository {

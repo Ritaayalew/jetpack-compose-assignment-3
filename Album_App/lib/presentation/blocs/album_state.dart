@@ -1,5 +1,5 @@
-import 'package:album_app/data/models/album.dart';
-import 'package:album_app/data/models/photo.dart';
+import '../../data/models/album.dart';
+import '../../data/models/photo.dart';
 import 'package:equatable/equatable.dart';
 
 abstract class AlbumState extends Equatable {

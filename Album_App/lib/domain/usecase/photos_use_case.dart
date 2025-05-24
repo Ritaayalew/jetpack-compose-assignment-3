@@ -1,5 +1,5 @@
-import 'package:album_app/data/models/photo.dart';
-import 'package:album_app/data/repository/album_repository.dart';
+import '../../data/models/photo.dart';
+import '../../data/repository/album_repository.dart';
 
 class PhotosUseCase {
   final AlbumRepository repository;

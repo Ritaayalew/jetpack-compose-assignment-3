@@ -1,6 +1,7 @@
-import 'package:album_app/presentation/blocs/album_event.dart';
+import '../blocs/album_event.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import '../blocs/album_bloc.dart';
 import '../blocs/album_state.dart';
 
@@ -12,7 +13,16 @@ class AlbumDetailScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Album $albumId Details')),
+      appBar: AppBar(
+        title: Text('Album $albumId Details'),
+        centerTitle: true, // Center the title
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            context.go('/'); // Navigate back to AlbumListScreen
+          },
+        ),
+      ),
       body: BlocBuilder<AlbumBloc, AlbumState>(
         builder: (context, state) {
           if (state is PhotoLoading) {
@@ -22,25 +32,35 @@ class AlbumDetailScreen extends StatelessWidget {
               itemCount: state.photos.length,
               itemBuilder: (context, index) {
                 final photo = state.photos[index];
-                return Card(
-                  margin: const EdgeInsets.all(8.0),
-                  child: Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Image.network(
-                          photo.thumbnailUrl,
-                          height: 150,
-                          width: double.infinity,
-                          fit: BoxFit.cover,
+                return Center(
+                  // Center the card horizontally
+                  child: Container(
+                    width: MediaQuery.of(context).size.width * 0.9, // Constrain card width
+                    margin: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                    child: Card(
+                      elevation: 4.0,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12.0),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const SizedBox(height: 8),
+                            Text(
+                              'Title: ${photo.title}',
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text('ID: ${photo.id}'),
+                            Text('Album ID: ${photo.albumId}'),
+                            Text('URL: ${photo.url}'),
+                          ],
                         ),
-                        const SizedBox(height: 8),
-                        Text('Title: ${photo.title}'),
-                        Text('ID: ${photo.id}'),
-                        Text('Album ID: ${photo.albumId}'),
-                        Text('URL: ${photo.url}'),
-                      ],
+                      ),
                     ),
                   ),
                 );
@@ -52,6 +72,7 @@ class AlbumDetailScreen extends StatelessWidget {
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   Text('Error: ${state.message}'),
+                  const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: () => context.read<AlbumBloc>().add(FetchPhotos(albumId)),
                     child: const Text('Retry'),
